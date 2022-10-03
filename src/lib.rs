@@ -42,7 +42,7 @@ impl MathFormula {
             if c.ne(&')') {
                 if c.is_numeric() {
                     tmp.push_str(&c.to_string());
-                } else if c != '(' {
+                } else if c != '(' && !tmp.is_empty() {
                     stack.push(tmp.clone());
                     stack.push(c.to_string());
                     tmp.clear();
@@ -56,9 +56,15 @@ impl MathFormula {
             } else {
                 stack.push(tmp.clone());
                 tmp.clear();
-                if let Ok(result) = self.cal(&mut stack) {
-                    stack.pop();
-                    stack.push(result.to_string());
+                loop {
+                    if let Ok(result) = self.cal(&mut stack) {
+                        if stack.last().unwrap().eq("(") {
+                            stack.pop();
+                            stack.push(result.to_string());
+                            break;
+                        }
+                        stack.push(result.to_string());
+                    }
                 }
             }
         }
